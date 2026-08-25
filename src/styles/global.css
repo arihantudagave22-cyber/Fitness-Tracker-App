@@ -1,0 +1,21 @@
+body {
+    min-width: 320px;
+    min-height: 100vh;
+
+    background:
+        radial-gradient(circle at 80% -10%,
+            var(--color-primary-soft),
+            transparent 30%),
+        radial-gradient(circle at 10% 20%,
+            var(--color-accent-soft),
+            transparent 25%),
+        var(--background);
+
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}

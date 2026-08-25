@@ -1,0 +1,455 @@
+.settings-page {
+    width: 100%;
+    max-width: 1000px;
+
+    margin: 0 auto;
+    padding: var(--space-8);
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: var(--space-8);
+
+    padding: var(--space-8);
+
+    background:
+        radial-gradient(circle at 85% 10%,
+            var(--color-primary-soft),
+            transparent 32%),
+        var(--surface);
+
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-2xl);
+
+    box-shadow: var(--shadow-sm);
+}
+
+.settings-eyebrow {
+    color: var(--color-primary);
+
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+
+    letter-spacing: 0.12em;
+}
+
+.settings-header h1 {
+    margin-top: var(--space-3);
+
+    color: var(--text-primary);
+
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+
+    line-height: var(--line-height-tight);
+}
+
+.settings-header p {
+    max-width: 620px;
+
+    margin-top: var(--space-3);
+
+    color: var(--text-secondary);
+
+    font-size: var(--font-size-sm);
+}
+
+.settings-header__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 54px;
+    height: 54px;
+
+    flex-shrink: 0;
+
+    color: var(--color-primary);
+
+    background: var(--color-primary-soft);
+
+    border: 1px solid rgba(139, 92, 246, 0.16);
+
+    border-radius: var(--radius-xl);
+}
+
+/* =========================================
+   SECTION
+========================================= */
+
+.settings-section {
+    margin-top: var(--space-8);
+}
+
+.settings-section__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    margin-bottom: var(--space-4);
+}
+
+.settings-section__heading>svg {
+    color: var(--color-primary);
+}
+
+.settings-section__heading span {
+    color: var(--color-primary);
+
+    font-size: 0.6875rem;
+    font-weight: var(--font-weight-bold);
+
+    letter-spacing: 0.1em;
+}
+
+.settings-section__heading h2 {
+    margin-top: var(--space-2);
+
+    color: var(--text-primary);
+
+    font-size: var(--font-size-xl);
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.settings-card {
+    padding:
+        0 var(--space-5);
+
+    background: var(--surface);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--radius-xl);
+
+    box-shadow: var(--shadow-sm);
+}
+
+/* =========================================
+   ROW
+========================================= */
+
+.settings-row {
+    display: flex;
+    align-items: center;
+
+    gap: var(--space-4);
+
+    min-height: 82px;
+}
+
+.settings-row__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    color: var(--color-primary);
+
+    background: var(--color-primary-soft);
+
+    border-radius: var(--radius-md);
+}
+
+.settings-row__icon--blue {
+    color: var(--color-info);
+    background: var(--color-info-soft);
+}
+
+.settings-row__icon--orange {
+    color: var(--color-warning);
+    background: var(--color-warning-soft);
+}
+
+.settings-row__icon--green {
+    color: var(--color-success);
+    background: var(--color-success-soft);
+}
+
+.settings-row__content {
+    min-width: 0;
+    flex: 1;
+}
+
+.settings-row__content strong {
+    display: block;
+
+    color: var(--text-primary);
+
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.settings-row__content span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--text-muted);
+
+    font-size: var(--font-size-xs);
+
+    line-height: var(--line-height-normal);
+}
+
+/* =========================================
+   DIVIDER
+========================================= */
+
+.settings-divider {
+    height: 1px;
+
+    background: var(--border-light);
+}
+
+/* =========================================
+   TOGGLE
+========================================= */
+
+.settings-toggle {
+    position: relative;
+
+    width: 44px;
+    height: 24px;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    background: var(--surface-active);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--radius-full);
+
+    cursor: pointer;
+
+    transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.settings-toggle span {
+    position: absolute;
+
+    top: 3px;
+    left: 3px;
+
+    width: 16px;
+    height: 16px;
+
+    background: var(--text-muted);
+
+    border-radius: var(--radius-full);
+
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast);
+}
+
+.settings-toggle--active {
+    background: var(--color-primary);
+
+    border-color: var(--color-primary);
+}
+
+.settings-toggle--active span {
+    background: var(--text-inverse);
+
+    transform: translateX(20px);
+}
+
+/* =========================================
+   SELECT
+========================================= */
+
+.settings-select {
+    display: flex;
+    align-items: center;
+
+    gap: var(--space-2);
+
+    flex-shrink: 0;
+
+    padding:
+        var(--space-2) var(--space-3);
+
+    color: var(--text-secondary);
+
+    background: var(--surface-elevated);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--radius-md);
+
+    font-size: var(--font-size-xs);
+
+    cursor: pointer;
+}
+
+.settings-select:hover {
+    color: var(--text-primary);
+
+    border-color: var(--border-hover);
+}
+
+/* =========================================
+   ACTION
+========================================= */
+
+.settings-action {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    min-height: 82px;
+
+    gap: var(--space-4);
+
+    padding: 0;
+
+    color: inherit;
+
+    background: transparent;
+
+    border: 0;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.settings-action>svg {
+    flex-shrink: 0;
+
+    color: var(--text-muted);
+}
+
+.settings-action:hover .settings-row__content strong {
+    color: var(--color-primary);
+}
+
+/* =========================================
+   DANGER
+========================================= */
+
+.settings-section--danger {
+    padding-bottom: var(--space-8);
+}
+
+.settings-danger-button {
+    width: 100%;
+
+    min-height: 48px;
+
+    margin: var(--space-4) 0;
+
+    color: var(--color-danger);
+
+    background: var(--color-danger-soft);
+
+    border: 1px solid rgba(251, 113, 133, 0.16);
+
+    border-radius: var(--radius-md);
+
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+
+    cursor: pointer;
+
+    transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.settings-danger-button:hover {
+    background: rgba(251, 113, 133, 0.16);
+
+    border-color:
+        rgba(251, 113, 133, 0.3);
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+    .settings-page {
+        padding:
+            var(--space-5) var(--space-4);
+    }
+
+    .settings-header {
+        align-items: flex-start;
+        flex-direction: column;
+
+        padding: var(--space-5);
+
+        border-radius: var(--radius-xl);
+    }
+
+    .settings-header h1 {
+        font-size: var(--font-size-2xl);
+    }
+
+    .settings-header__icon {
+        width: 46px;
+        height: 46px;
+    }
+
+    .settings-card {
+        padding:
+            0 var(--space-4);
+
+        border-radius: var(--radius-xl);
+    }
+
+    .settings-row {
+        min-height: 78px;
+
+        gap: var(--space-3);
+    }
+
+    .settings-row__icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .settings-select {
+        padding:
+            var(--space-2);
+    }
+}
+
+/* =========================================
+   SMALL PHONES
+========================================= */
+
+@media (max-width: 380px) {
+    .settings-page {
+        padding:
+            var(--space-4) var(--space-3);
+    }
+
+    .settings-card {
+        padding:
+            0 var(--space-3);
+    }
+
+    .settings-row__content span {
+        font-size: 0.6875rem;
+    }
+}

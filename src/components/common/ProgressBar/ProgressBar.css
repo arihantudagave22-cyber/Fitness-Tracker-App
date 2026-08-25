@@ -1,0 +1,126 @@
+.progress-bar {
+    width: 100%;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.progress-bar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: var(--space-3);
+
+    margin-bottom: var(--space-2);
+}
+
+.progress-bar__label {
+    color: var(--text-secondary);
+
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+}
+
+.progress-bar__value {
+    color: var(--text-primary);
+
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* =========================================
+   TRACK
+========================================= */
+
+.progress-bar__track {
+    width: 100%;
+
+    overflow: hidden;
+
+    background: var(--surface-elevated);
+
+    border-radius: var(--radius-full);
+}
+
+.progress-bar__track--small {
+    height: 5px;
+}
+
+.progress-bar__track--medium {
+    height: 8px;
+}
+
+.progress-bar__track--large {
+    height: 12px;
+}
+
+/* =========================================
+   FILL
+========================================= */
+
+.progress-bar__fill {
+    height: 100%;
+
+    min-width: 0;
+
+    border-radius: inherit;
+
+    transition: width 500ms ease;
+}
+
+.progress-bar__fill--primary {
+    background:
+        linear-gradient(90deg,
+            var(--color-primary-dark),
+            var(--color-primary));
+
+    box-shadow:
+        0 0 12px var(--color-primary-glow);
+}
+
+.progress-bar__fill--secondary {
+    background:
+        linear-gradient(90deg,
+            var(--color-secondary),
+            var(--color-accent));
+
+    box-shadow:
+        0 0 12px var(--color-secondary-soft);
+}
+
+.progress-bar__fill--success {
+    background:
+        linear-gradient(90deg,
+            #10b981,
+            var(--color-success));
+}
+
+.progress-bar__fill--warning {
+    background:
+        linear-gradient(90deg,
+            #f59e0b,
+            var(--color-warning));
+}
+
+.progress-bar__fill--danger {
+    background:
+        linear-gradient(90deg,
+            #f43f5e,
+            var(--color-danger));
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+    .progress-bar__track--medium {
+        height: 7px;
+    }
+
+    .progress-bar__track--large {
+        height: 10px;
+    }
+}

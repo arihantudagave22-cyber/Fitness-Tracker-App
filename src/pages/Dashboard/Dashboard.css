@@ -1,0 +1,406 @@
+.dashboard {
+    min-height: calc(100vh - var(--header-height));
+}
+
+/* =========================================
+   PAGE HEADER
+========================================= */
+
+.dashboard__eyebrow {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: var(--space-3);
+
+    color: var(--color-primary);
+
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+
+    letter-spacing: 0.12em;
+}
+
+/* =========================================
+   WELCOME
+========================================= */
+
+.dashboard__welcome {
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: var(--space-8);
+
+    padding: var(--space-8);
+
+    background:
+        radial-gradient(circle at 85% 15%,
+            var(--color-primary-soft),
+            transparent 32%),
+        radial-gradient(circle at 10% 90%,
+            var(--color-secondary-soft),
+            transparent 28%),
+        var(--surface);
+
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-2xl);
+
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard__welcome::after {
+    position: absolute;
+    right: -80px;
+    bottom: -100px;
+
+    width: 220px;
+    height: 220px;
+
+    content: "";
+
+    background: var(--color-primary-glow);
+
+    border-radius: var(--radius-full);
+
+    filter: blur(70px);
+
+    opacity: 0.4;
+}
+
+.dashboard__welcome>div {
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard__welcome h2 {
+    color: var(--text-primary);
+
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.02em;
+}
+
+.dashboard__welcome p {
+    max-width: 520px;
+
+    margin-top: var(--space-2);
+
+    color: var(--text-secondary);
+
+    font-size: var(--font-size-sm);
+}
+
+/* =========================================
+   DAILY PROGRESS
+========================================= */
+
+.dashboard__progress {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    gap: var(--space-2);
+
+    min-width: 130px;
+}
+
+.dashboard__progress span {
+    color: var(--text-muted);
+
+    font-size: var(--font-size-xs);
+}
+
+.dashboard__progress strong {
+    color: var(--color-primary);
+
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+
+    line-height: 1;
+
+    text-shadow:
+        0 0 24px var(--color-primary-glow);
+}
+
+/* =========================================
+   SECTIONS
+========================================= */
+
+.dashboard__section {
+    margin-top: var(--space-8);
+}
+
+.dashboard__section-header {
+    margin-bottom: var(--space-4);
+}
+
+.dashboard__section-title {
+    color: var(--text-primary);
+
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+}
+
+.dashboard__section-subtitle {
+    margin-top: 3px;
+
+    color: var(--text-muted);
+
+    font-size: var(--font-size-xs);
+}
+
+/* =========================================
+   STATISTICS
+========================================= */
+
+.dashboard__stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: var(--space-4);
+}
+
+/* =========================================
+   LOWER GRID
+========================================= */
+
+.dashboard__grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: var(--space-4);
+
+    margin-top: var(--space-4);
+}
+
+/* =========================================
+   CARD HEADER
+========================================= */
+
+.dashboard__card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: var(--space-4);
+
+    margin-bottom: var(--space-6);
+}
+
+.dashboard__card-title {
+    color: var(--text-primary);
+
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+}
+
+.dashboard__card-subtitle {
+    margin-top: 3px;
+
+    color: var(--text-muted);
+
+    font-size: var(--font-size-xs);
+}
+
+.dashboard__card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    color: var(--color-primary);
+
+    background: var(--color-primary-soft);
+
+    border-radius: var(--radius-md);
+}
+
+.dashboard__challenge-badge {
+    padding: 5px 9px;
+
+    color: var(--color-primary);
+
+    background: var(--color-primary-soft);
+
+    border: 1px solid rgba(139, 92, 246, 0.15);
+
+    border-radius: var(--radius-full);
+
+    font-size: 0.625rem;
+    font-weight: var(--font-weight-bold);
+
+    letter-spacing: 0.08em;
+}
+
+/* =========================================
+   GOAL
+========================================= */
+
+.dashboard__goal {
+    margin-bottom: var(--space-6);
+}
+
+.dashboard__goal-value {
+    display: flex;
+    align-items: baseline;
+
+    gap: var(--space-2);
+
+    margin-bottom: var(--space-4);
+}
+
+.dashboard__goal-value strong {
+    color: var(--text-primary);
+
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+
+    line-height: 1;
+}
+
+.dashboard__goal-value span {
+    color: var(--text-muted);
+
+    font-size: var(--font-size-sm);
+}
+
+/* =========================================
+   CHALLENGE
+========================================= */
+
+.dashboard__challenge {
+    display: flex;
+    align-items: center;
+
+    gap: var(--space-4);
+
+    margin-bottom: var(--space-6);
+
+    padding: var(--space-4);
+
+    background: var(--surface-elevated);
+
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+}
+
+.dashboard__challenge-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+
+    flex-shrink: 0;
+
+    background: var(--color-warning-soft);
+
+    border-radius: var(--radius-md);
+
+    font-size: 1.4rem;
+}
+
+.dashboard__challenge h3 {
+    color: var(--text-primary);
+
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.dashboard__challenge p {
+    margin-top: 3px;
+
+    color: var(--text-muted);
+
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1100px) {
+    .dashboard__stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+    .dashboard {
+        min-height:
+            calc(100vh - var(--mobile-header-height) - var(--mobile-nav-height));
+    }
+
+    .dashboard__welcome {
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: var(--space-6);
+
+        padding: var(--space-5);
+
+        border-radius: var(--radius-xl);
+    }
+
+    .dashboard__welcome h2 {
+        font-size: var(--font-size-xl);
+    }
+
+    .dashboard__progress {
+        align-items: flex-start;
+        min-width: 0;
+    }
+
+    .dashboard__progress strong {
+        font-size: var(--font-size-3xl);
+    }
+
+    .dashboard__stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: var(--space-3);
+    }
+
+    .dashboard__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================
+   SMALL PHONES
+========================================= */
+
+@media (max-width: 480px) {
+    .dashboard__stats {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard__welcome {
+        padding: var(--space-4);
+    }
+
+    .dashboard__challenge {
+        align-items: flex-start;
+    }
+}
