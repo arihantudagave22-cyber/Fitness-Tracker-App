@@ -59,28 +59,8 @@
 }
 
 .sidebar-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     width: 42px;
     height: 42px;
-
-    flex-shrink: 0;
-
-    color: var(--text-inverse);
-
-    background:
-        linear-gradient(135deg,
-            var(--color-primary),
-            var(--color-primary-dark));
-
-    border-radius: var(--radius-lg);
-
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-
-    box-shadow: var(--shadow-primary);
 }
 
 .sidebar_brand-content {

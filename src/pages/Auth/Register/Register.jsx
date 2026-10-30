@@ -8,15 +8,22 @@ import {
 } from "lucide-react";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Button from "../../../components/common/Button/Button";
+import FitTrackLogo from "../../../components/brand/FitTrackLogo";
+import { apiRequest, saveAuthToken } from "../../../lib/api";
+import { useAuth } from "../../../context/AuthContext.js";
 
 import "./Register.css";
 
 const Register = () => {
+    const navigate = useNavigate();
+    const { signIn } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [formError, setFormError] = useState("");
 
     const [formData, setFormData] = useState({
         name: "",
@@ -27,6 +34,7 @@ const Register = () => {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
+        setFormError("");
 
         setFormData((previous) => ({
             ...previous,
@@ -34,10 +42,34 @@ const Register = () => {
         }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        console.log("Register form:", formData);
+        if (formData.password !== formData.confirmPassword) {
+            setFormError("Passwords do not match.");
+            return;
+        }
+
+        setIsLoading(true);
+        setFormError("");
+
+        try {
+            const result = await apiRequest("/auth/register", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                }),
+            });
+            saveAuthToken(result.token);
+            signIn(result.user);
+            navigate("/");
+        } catch (error) {
+            setFormError(error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -52,9 +84,7 @@ const Register = () => {
                     to="/login"
                     className="register-brand"
                 >
-                    <div className="register-brand__logo">
-                        FT
-                    </div>
+                    <FitTrackLogo />
 
                     <div>
                         <h1>FitTrack</h1>
@@ -85,6 +115,12 @@ const Register = () => {
                         className="register-form"
                         onSubmit={handleSubmit}
                     >
+
+                        {formError && (
+                            <p className="register-form__error" role="alert">
+                                {formError}
+                            </p>
+                        )}
 
                         {/* NAME */}
 
@@ -244,6 +280,7 @@ const Register = () => {
                             type="submit"
                             fullWidth
                             size="large"
+                            loading={isLoading}
                             icon={<ArrowRight size={18} />}
                             iconPosition="right"
                         >

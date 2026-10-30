@@ -1,0 +1,102 @@
+.workout-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.workout-header__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+.workout-header__eyebrow {
+    display: block;
+    margin-bottom: var(--space-2);
+    color: var(--color-primary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.12em;
+}
+
+.workout-page-title {
+    font-size: var(--font-display-md);
+    line-height: 44px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.workout-header__details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.workout-title-input {
+    min-width: 0;
+    flex: 1;
+    padding: 5px 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    outline: none;
+    color: var(--color-primary);
+    font-size: var(--font-headline-mobile);
+    font-weight: 600;
+    background: transparent;
+}
+
+.workout-title-input:focus {
+    border-bottom-color: var(--color-primary);
+}
+
+.workout-header__stats {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.workout-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    padding: 4px 8px;
+
+    border-radius: var(--radius-sm);
+
+    font-family: var(--font-mono);
+    font-size: var(--font-label);
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+}
+
+.workout-chip--cyan {
+    color: var(--color-secondary);
+    background: rgba(2, 174, 190, 0.1);
+    border: 1px solid rgba(84, 216, 232, 0.2);
+}
+
+.workout-chip--green {
+    color: var(--color-tertiary);
+    background: rgba(0, 165, 116, 0.1);
+    border: 1px solid rgba(69, 223, 164, 0.2);
+}
+
+@media (max-width: 600px) {
+    .workout-header__top {
+        align-items: flex-start;
+    }
+
+    .workout-page-title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .workout-header__details {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

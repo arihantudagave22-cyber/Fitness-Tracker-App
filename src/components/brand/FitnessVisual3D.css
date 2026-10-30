@@ -1,0 +1,114 @@
+.fitness-visual3d {
+    --visual-accent: #a685ff;
+    --visual-accent-deep: #6740cf;
+    position: relative;
+    display: inline-grid;
+    width: 108px;
+    height: 108px;
+    flex: 0 0 108px;
+    place-items: center;
+    perspective: 320px;
+    isolation: isolate;
+}
+
+.fitness-visual3d--cyan {
+    --visual-accent: #61d9e8;
+    --visual-accent-deep: #128da4;
+}
+
+.fitness-visual3d--green {
+    --visual-accent: #73e3b1;
+    --visual-accent-deep: #15976c;
+}
+
+.fitness-visual3d--orange {
+    --visual-accent: #ffc274;
+    --visual-accent-deep: #d97732;
+}
+
+.fitness-visual3d__orbit {
+    position: absolute;
+    width: 94px;
+    height: 54px;
+    border: 1px solid color-mix(in srgb, var(--visual-accent) 48%, transparent);
+    border-radius: 50%;
+    transform: rotate(-32deg);
+}
+
+.fitness-visual3d__base {
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    border-radius: 22px;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--visual-accent) 22%, var(--surface)), var(--surface-low));
+    border: 1px solid color-mix(in srgb, var(--visual-accent) 38%, var(--border-color));
+    box-shadow: 0 14px 0 color-mix(in srgb, var(--visual-accent-deep) 46%, var(--surface-low)), 0 22px 30px rgba(30, 20, 54, 0.2);
+    transform: rotateX(58deg) rotateZ(-34deg) translateY(-7px);
+}
+
+.fitness-visual3d__object {
+    position: relative;
+    display: grid;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    color: var(--visual-accent);
+    background: radial-gradient(circle at 30% 24%, color-mix(in srgb, var(--visual-accent) 35%, var(--surface)), var(--surface) 72%);
+    border: 1px solid color-mix(in srgb, var(--visual-accent) 50%, var(--border-color));
+    border-radius: 20px;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.13), 0 13px 22px rgba(25, 16, 49, 0.25);
+    transform: translateY(-10px) rotate(-8deg);
+}
+
+.fitness-visual3d__object svg {
+    filter: drop-shadow(0 3px 4px color-mix(in srgb, var(--visual-accent-deep) 65%, transparent));
+}
+
+.fitness-visual3d__spark {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--visual-accent);
+    border-radius: 2px;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--visual-accent) 72%, transparent);
+    transform: rotate(45deg);
+}
+
+.fitness-visual3d__spark--one {
+    top: 13px;
+    right: 13px;
+}
+
+.fitness-visual3d__spark--two {
+    bottom: 17px;
+    left: 11px;
+    width: 5px;
+    height: 5px;
+    opacity: 0.72;
+}
+
+@media (max-width: 600px) {
+    .fitness-visual3d {
+        width: 78px;
+        height: 78px;
+        flex-basis: 78px;
+        transform: scale(0.82);
+        transform-origin: center;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .fitness-visual3d__object {
+        animation: fitness-visual-float 5s ease-in-out infinite;
+    }
+}
+
+@keyframes fitness-visual-float {
+    0%, 100% {
+        transform: translateY(-10px) rotate(-8deg);
+    }
+
+    50% {
+        transform: translateY(-14px) rotate(-5deg);
+    }
+}

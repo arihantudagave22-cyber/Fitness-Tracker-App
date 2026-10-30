@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "promote-superadmin": "node backend/scripts/promote-superadmin.js"
   },
   "dependencies": {
-    "axois": "^0.0.1-security",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

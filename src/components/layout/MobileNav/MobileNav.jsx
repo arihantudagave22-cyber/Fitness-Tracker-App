@@ -1,58 +1,87 @@
 import {
-    ChartNoAxesCombined,
-    Dumbbell,
-    Home,
+    LayoutDashboard,
     Trophy,
+    Dumbbell,
+    ChartNoAxesCombined,
+    User,
+    Ruler,
+    Settings,
+    Shield,
 } from "lucide-react";
+
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext.js";
 
 import "./MobileNav.css";
 
-const navigationItems = [
+const items = [
     {
-        label: "Home",
-        icon: Home,
-        path: "/",
+        id: "/",
+        label: "Dashboard",
+        icon: LayoutDashboard,
     },
     {
+        id: "/challenges",
         label: "Challenges",
         icon: Trophy,
-        path: "/challenges",
     },
     {
+        id: "/workouts",
         label: "Workouts",
         icon: Dumbbell,
-        path: "/workouts",
     },
     {
+        id: "/progress",
         label: "Progress",
         icon: ChartNoAxesCombined,
-        path: "/progress",
+    },
+    {
+        id: "/measurements",
+        label: "Measure",
+        icon: Ruler,
+    },
+    {
+        id: "/profile",
+        label: "Profile",
+        icon: User,
+    },
+    {
+        id: "/settings",
+        label: "Settings",
+        icon: Settings,
+    },
+    {
+        id: "/admin",
+        label: "Admin",
+        icon: Shield,
+        adminOnly: true,
     },
 ];
 
-const MobileNav = () => {
+export default function MobileNav() {
+    const { user } = useAuth();
     return (
         <nav className="mobile-nav">
-            {navigationItems.map((item) => {
+            {items.filter((item) =>
+                !item.adminOnly || ["admin", "superadmin"].includes(user?.role)
+            ).map((item) => {
                 const Icon = item.icon;
 
                 return (
-                    <a
-                        key={item.path}
-                        href={item.path}
-                        className={`mobile-nav__item ${
-                            item.path === "/"
-                                ? "mobile-nav__item--active"
-                                : ""
-                        }`}
+                    <NavLink
+                        key={item.id}
+                        to={item.id}
+                        end={item.id === "/"}
+                        className={({ isActive: routeIsActive }) =>
+                            `mobile-nav__item ${routeIsActive ? "mobile-nav__item--active" : ""}`
+                        }
                     >
-                        <Icon size={20} strokeWidth={2} />
+                        <Icon size={22} />
+
                         <span>{item.label}</span>
-                    </a>
+                    </NavLink>
                 );
             })}
         </nav>
     );
-};
-
-export default MobileNav;
+}

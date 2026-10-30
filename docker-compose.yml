@@ -1,0 +1,17 @@
+services:
+  fittrack:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_PATH: /data/fitness.sqlite
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:?Set AUTH_TOKEN_SECRET in .env}
+    ports:
+      - "${HOST_PORT:-3001}:3001"
+    volumes:
+      - fittrack_data:/data
+
+volumes:
+  fittrack_data:

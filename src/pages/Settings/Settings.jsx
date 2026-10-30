@@ -5,414 +5,245 @@ import {
     KeyRound,
     Lock,
     Moon,
+    Sun,
     ShieldCheck,
     Smartphone,
     UserRound,
 } from "lucide-react";
-
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import FitnessVisual3D from "../../components/brand/FitnessVisual3D";
+import { useTheme } from "../../context/ThemeContext.js";
+import { apiRequest } from "../../lib/api.js";
 import "./Settings.css";
 
+const preferenceRows = [
+    {
+        key: "notifications",
+        title: "Notifications",
+        description: "Save your notification preference for this account.",
+        icon: Bell,
+        iconClass: "settings-row__icon--blue",
+    },
+    {
+        key: "workoutReminders",
+        title: "Workout reminders",
+        description: "Save whether you want workout reminders enabled.",
+        icon: Smartphone,
+        iconClass: "settings-row__icon--orange",
+    },
+    {
+        key: "privateProfile",
+        title: "Private profile",
+        description: "Keep your profile private by default.",
+        icon: UserRound,
+        iconClass: "settings-row__icon--green",
+    },
+];
+
 const Settings = () => {
-    const [notifications, setNotifications] = useState(true);
-    const [workoutReminders, setWorkoutReminders] =
-        useState(true);
-    const [darkMode, setDarkMode] = useState(true);
-    const [privateProfile, setPrivateProfile] =
-        useState(false);
+    const [preferences, setPreferences] = useState(null);
+    const [pendingPreference, setPendingPreference] = useState("");
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+    const { theme, toggleTheme } = useTheme();
+    const darkMode = theme === "dark";
+
+    useEffect(() => {
+        let isCurrent = true;
+        apiRequest("/settings")
+            .then((result) => {
+                if (isCurrent) setPreferences(result.settings);
+            })
+            .catch((requestError) => {
+                if (isCurrent) setError(requestError.message);
+            });
+        return () => { isCurrent = false; };
+    }, []);
+
+    const updatePreference = async (key) => {
+        if (!preferences || pendingPreference) return;
+        setError("");
+        setMessage("");
+        setPendingPreference(key);
+        try {
+            const result = await apiRequest("/settings", {
+                method: "PATCH",
+                body: JSON.stringify({ [key]: !preferences[key] }),
+            });
+            setPreferences(result.settings);
+        } catch (requestError) {
+            setError(requestError.message);
+        } finally {
+            setPendingPreference("");
+        }
+    };
+
+    const changePassword = async (event) => {
+        event.preventDefault();
+        setError("");
+        setMessage("");
+        try {
+            const result = await apiRequest("/auth/change-password", {
+                method: "POST",
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+            setMessage(result.message);
+            setCurrentPassword("");
+            setNewPassword("");
+            setShowPasswordForm(false);
+        } catch (requestError) {
+            setError(requestError.message);
+        }
+    };
 
     return (
         <section className="settings-page">
-
-            {/* =========================================
-                HEADER
-            ========================================= */}
-
             <header className="settings-header">
-
                 <div>
-                    <span className="settings-eyebrow">
-                        SETTINGS
-                    </span>
-
-                    <h1>
-                        Customize your experience.
-                    </h1>
-
-                    <p>
-                        Manage your preferences, privacy,
-                        notifications, and account security.
-                    </p>
+                    <span className="settings-eyebrow">SETTINGS</span>
+                    <h1>Customize your experience.</h1>
+                    <p>Manage your preferences and account security.</p>
                 </div>
-
-                <div className="settings-header__icon">
-                    <ShieldCheck size={24} />
-                </div>
-
+                <FitnessVisual3D icon={ShieldCheck} variant="violet" />
             </header>
 
-            {/* =========================================
-                PREFERENCES
-            ========================================= */}
+            {error && <p className="app-error" role="alert">{error}</p>}
+            {message && <p className="app-success" role="status">{message}</p>}
 
             <section className="settings-section">
-
                 <div className="settings-section__heading">
-                    <div>
-                        <span>
-                            PREFERENCES
-                        </span>
-
-                        <h2>
-                            App experience
-                        </h2>
-                    </div>
-
+                    <div><span>PREFERENCES</span><h2>App experience</h2></div>
                     <Moon size={20} />
                 </div>
-
                 <div className="settings-card">
-
                     <div className="settings-row">
-
-                        <div className="settings-row__icon">
-                            <Moon size={19} />
-                        </div>
-
+                        <div className="settings-row__icon">{darkMode ? <Moon size={19} /> : <Sun size={19} />}</div>
                         <div className="settings-row__content">
-                            <strong>
-                                Dark mode
-                            </strong>
-
-                            <span>
-                                Use the premium dark interface
-                                throughout FitTrack.
-                            </span>
+                            <strong>Dark mode</strong>
+                            <span>{darkMode ? "Dark appearance is enabled." : "Light appearance is enabled."}</span>
                         </div>
-
                         <button
                             type="button"
-                            className={`settings-toggle ${
-                                darkMode
-                                    ? "settings-toggle--active"
-                                    : ""
-                            }`}
-                            onClick={() =>
-                                setDarkMode(
-                                    (previous) =>
-                                        !previous
-                                )
-                            }
-                            aria-label="Toggle dark mode"
-                        >
-                            <span />
-                        </button>
-
+                            className={`settings-toggle ${darkMode ? "settings-toggle--active" : ""}`}
+                            onClick={toggleTheme}
+                            aria-label={`Turn ${darkMode ? "off" : "on"} dark mode`}
+                            aria-pressed={darkMode}
+                        ><span /></button>
                     </div>
-
                     <div className="settings-divider" />
-
                     <div className="settings-row">
-
-                        <div className="settings-row__icon">
-                            <Globe size={19} />
-                        </div>
-
+                        <div className="settings-row__icon"><Globe size={19} /></div>
                         <div className="settings-row__content">
-                            <strong>
-                                Language
-                            </strong>
-
-                            <span>
-                                Choose your preferred
-                                application language.
-                            </span>
+                            <strong>Language</strong><span>English</span>
                         </div>
-
-                        <button
-                            type="button"
-                            className="settings-select"
-                        >
-                            English
-                            <ChevronRight size={16} />
-                        </button>
-
                     </div>
-
                 </div>
-
             </section>
 
-            {/* =========================================
-                NOTIFICATIONS
-            ========================================= */}
-
             <section className="settings-section">
-
                 <div className="settings-section__heading">
-                    <div>
-                        <span>
-                            NOTIFICATIONS
-                        </span>
-
-                        <h2>
-                            Stay informed
-                        </h2>
-                    </div>
-
+                    <div><span>NOTIFICATIONS</span><h2>Account preferences</h2></div>
                     <Bell size={20} />
                 </div>
-
                 <div className="settings-card">
-
-                    <div className="settings-row">
-
-                        <div className="settings-row__icon settings-row__icon--blue">
-                            <Bell size={19} />
-                        </div>
-
-                        <div className="settings-row__content">
-                            <strong>
-                                Push notifications
-                            </strong>
-
-                            <span>
-                                Receive important updates and
-                                achievement notifications.
-                            </span>
-                        </div>
-
-                        <button
-                            type="button"
-                            className={`settings-toggle ${
-                                notifications
-                                    ? "settings-toggle--active"
-                                    : ""
-                            }`}
-                            onClick={() =>
-                                setNotifications(
-                                    (previous) =>
-                                        !previous
-                                )
-                            }
-                            aria-label="Toggle notifications"
-                        >
-                            <span />
-                        </button>
-
-                    </div>
-
-                    <div className="settings-divider" />
-
-                    <div className="settings-row">
-
-                        <div className="settings-row__icon settings-row__icon--orange">
-                            <Smartphone size={19} />
-                        </div>
-
-                        <div className="settings-row__content">
-                            <strong>
-                                Workout reminders
-                            </strong>
-
-                            <span>
-                                Get reminded when it's time
-                                for your scheduled workout.
-                            </span>
-                        </div>
-
-                        <button
-                            type="button"
-                            className={`settings-toggle ${
-                                workoutReminders
-                                    ? "settings-toggle--active"
-                                    : ""
-                            }`}
-                            onClick={() =>
-                                setWorkoutReminders(
-                                    (previous) =>
-                                        !previous
-                                )
-                            }
-                            aria-label="Toggle workout reminders"
-                        >
-                            <span />
-                        </button>
-
-                    </div>
-
+                    {preferenceRows.slice(0, 2).map((preference, index) => {
+                        const Icon = preference.icon;
+                        return (
+                            <div key={preference.key}>
+                                {index > 0 && <div className="settings-divider" />}
+                                <div className="settings-row">
+                                    <div className={`settings-row__icon ${preference.iconClass}`}><Icon size={19} /></div>
+                                    <div className="settings-row__content">
+                                        <strong>{preference.title}</strong><span>{preference.description}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={`settings-toggle ${preferences?.[preference.key] ? "settings-toggle--active" : ""}`}
+                                        onClick={() => updatePreference(preference.key)}
+                                        disabled={!preferences || Boolean(pendingPreference)}
+                                        aria-label={`Toggle ${preference.title}`}
+                                        aria-pressed={Boolean(preferences?.[preference.key])}
+                                    ><span /></button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {!preferences && !error && <p className="settings-loading" role="status">Loading preferences...</p>}
                 </div>
-
             </section>
 
-            {/* =========================================
-                PRIVACY
-            ========================================= */}
-
             <section className="settings-section">
-
                 <div className="settings-section__heading">
-                    <div>
-                        <span>
-                            PRIVACY
-                        </span>
-
-                        <h2>
-                            Control your visibility
-                        </h2>
-                    </div>
-
+                    <div><span>PRIVACY</span><h2>Control your visibility</h2></div>
                     <Lock size={20} />
                 </div>
-
                 <div className="settings-card">
-
                     <div className="settings-row">
-
-                        <div className="settings-row__icon settings-row__icon--green">
-                            <UserRound size={19} />
-                        </div>
-
+                        <div className="settings-row__icon settings-row__icon--green"><UserRound size={19} /></div>
                         <div className="settings-row__content">
-                            <strong>
-                                Private profile
-                            </strong>
-
-                            <span>
-                                Hide your profile activity
-                                from other users.
-                            </span>
+                            <strong>Private profile</strong>
+                            <span>{preferenceRows[2].description}</span>
                         </div>
-
                         <button
                             type="button"
-                            className={`settings-toggle ${
-                                privateProfile
-                                    ? "settings-toggle--active"
-                                    : ""
-                            }`}
-                            onClick={() =>
-                                setPrivateProfile(
-                                    (previous) =>
-                                        !previous
-                                )
-                            }
+                            className={`settings-toggle ${preferences?.privateProfile ? "settings-toggle--active" : ""}`}
+                            onClick={() => updatePreference("privateProfile")}
+                            disabled={!preferences || Boolean(pendingPreference)}
                             aria-label="Toggle private profile"
-                        >
-                            <span />
-                        </button>
-
+                            aria-pressed={Boolean(preferences?.privateProfile)}
+                        ><span /></button>
                     </div>
-
                 </div>
-
             </section>
-
-            {/* =========================================
-                SECURITY
-            ========================================= */}
 
             <section className="settings-section">
-
                 <div className="settings-section__heading">
-                    <div>
-                        <span>
-                            SECURITY
-                        </span>
-
-                        <h2>
-                            Account security
-                        </h2>
-                    </div>
-
+                    <div><span>SECURITY</span><h2>Account security</h2></div>
                     <KeyRound size={20} />
                 </div>
-
                 <div className="settings-card">
-
                     <button
                         type="button"
                         className="settings-action"
+                        onClick={() => setShowPasswordForm((show) => !show)}
+                        aria-expanded={showPasswordForm}
                     >
-                        <div className="settings-row__icon">
-                            <KeyRound size={19} />
-                        </div>
-
+                        <div className="settings-row__icon"><KeyRound size={19} /></div>
                         <div className="settings-row__content">
-                            <strong>
-                                Change password
-                            </strong>
-
-                            <span>
-                                Update your account password.
-                            </span>
+                            <strong>Change password</strong><span>Update your account password.</span>
                         </div>
-
                         <ChevronRight size={18} />
-
                     </button>
-
-                    <div className="settings-divider" />
-
-                    <button
-                        type="button"
-                        className="settings-action"
-                    >
-                        <div className="settings-row__icon">
-                            <ShieldCheck size={19} />
-                        </div>
-
-                        <div className="settings-row__content">
-                            <strong>
-                                Security settings
-                            </strong>
-
-                            <span>
-                                Review your account security
-                                and active sessions.
-                            </span>
-                        </div>
-
-                        <ChevronRight size={18} />
-
-                    </button>
-
+                    {showPasswordForm && (
+                        <form className="settings-password-form" onSubmit={changePassword}>
+                            <label htmlFor="current-password">Current password</label>
+                            <input
+                                id="current-password"
+                                type="password"
+                                autoComplete="current-password"
+                                value={currentPassword}
+                                onChange={(event) => setCurrentPassword(event.target.value)}
+                                required
+                            />
+                            <label htmlFor="new-password">New password</label>
+                            <input
+                                id="new-password"
+                                type="password"
+                                autoComplete="new-password"
+                                minLength={8}
+                                maxLength={128}
+                                value={newPassword}
+                                onChange={(event) => setNewPassword(event.target.value)}
+                                required
+                            />
+                            <button type="submit">Update password</button>
+                        </form>
+                    )}
                 </div>
-
             </section>
-
-            {/* =========================================
-                DANGER ZONE
-            ========================================= */}
-
-            <section className="settings-section settings-section--danger">
-
-                <div className="settings-section__heading">
-                    <div>
-                        <span>
-                            ACCOUNT
-                        </span>
-
-                        <h2>
-                            Account actions
-                        </h2>
-                    </div>
-                </div>
-
-                <div className="settings-card">
-
-                    <button
-                        type="button"
-                        className="settings-danger-button"
-                    >
-                        Delete account
-                    </button>
-
-                </div>
-
-            </section>
-
         </section>
     );
 };

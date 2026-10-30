@@ -1,386 +1,144 @@
-import {
-    ArrowRight,
-    Clock3,
-    Dumbbell,
-    Flame,
-    MoreHorizontal,
-    Play,
-    Plus,
-    Timer,
-} from "lucide-react";
-
-import { useMemo, useState } from "react";
-
-import Button from "../../components/common/Button/Button";
-import Card from "../../components/common/Card/Card";
-
+import { useEffect, useMemo, useState } from "react";
+import { Dumbbell } from "lucide-react";
+import FitnessVisual3D from "../../components/brand/FitnessVisual3D";
+import { apiRequest } from "../../lib/api.js";
+import WorkoutHeader from "./WorkoutHeader/WorkoutHeader";
+import ExerciseCard from "./ExerciseCard/ExerciseCard";
+import WorkoutHistory from "./WorkoutHistory/WorkoutHistory";
 import "./Workouts.css";
 
-const initialWorkouts = [
-    {
-        id: 1,
-        title: "Push Strength",
-        category: "Strength",
-        duration: 45,
-        calories: 320,
-        exercises: 6,
-        intensity: "High",
-        status: "completed",
-    },
-    {
-        id: 2,
-        title: "Lower Body Power",
-        category: "Legs",
-        duration: 50,
-        calories: 410,
-        exercises: 7,
-        intensity: "High",
-        status: "planned",
-    },
-    {
-        id: 3,
-        title: "Full Body Mobility",
-        category: "Mobility",
-        duration: 25,
-        calories: 160,
-        exercises: 5,
-        intensity: "Medium",
-        status: "planned",
-    },
-    {
-        id: 4,
-        title: "Upper Body Volume",
-        category: "Upper Body",
-        duration: 40,
-        calories: 290,
-        exercises: 8,
-        intensity: "Medium",
-        status: "planned",
-    },
+const initialExercises = [
+    { id: "pullups", name: "Weighted Pullups", sets: 4, reps: 8 },
+    { id: "rows", name: "Seated Rows", sets: 3, reps: 12 },
+    { id: "curls", name: "Bicep Curls", sets: 3, reps: 15 },
 ];
 
-const filterOptions = [
-    "All",
-    "Strength",
-    "Legs",
-    "Mobility",
-    "Upper Body",
-];
+const createRows = (sets) => Array.from({ length: sets }, (_, index) => ({
+    set: index + 1,
+    weight: "",
+    reps: "",
+    completed: false,
+}));
 
-const Workouts = () => {
-    const [workouts] = useState(initialWorkouts);
-    const [activeFilter, setActiveFilter] = useState("All");
+export default function Workouts() {
+    const [title, setTitle] = useState("Strength Workout");
+    const [exerciseRows, setExerciseRows] = useState(() =>
+        Object.fromEntries(initialExercises.map((exercise) => [
+            exercise.id,
+            createRows(exercise.sets),
+        ]))
+    );
+    const [history, setHistory] = useState([]);
+    const [error, setError] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const [startedAt, setStartedAt] = useState(() => new Date());
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-    const filteredWorkouts = useMemo(() => {
-        if (activeFilter === "All") {
-            return workouts;
+    useEffect(() => {
+        let isCurrent = true;
+        apiRequest("/workouts")
+            .then((result) => {
+                if (isCurrent) setHistory(result.workouts);
+            })
+            .catch((requestError) => {
+                if (isCurrent) setError(requestError.message);
+            });
+        return () => { isCurrent = false; };
+    }, []);
+
+    useEffect(() => {
+        const timer = window.setInterval(() => {
+            setElapsedSeconds(Math.floor((Date.now() - startedAt.getTime()) / 1000));
+        }, 1000);
+        return () => window.clearInterval(timer);
+    }, [startedAt]);
+
+    const durationMinutes = Math.floor(elapsedSeconds / 60);
+    const completedSets = useMemo(
+        () => Object.values(exerciseRows).flat().filter((row) => row.completed),
+        [exerciseRows],
+    );
+
+    const updateRows = (id, rows) => {
+        setExerciseRows((current) => ({ ...current, [id]: rows }));
+    };
+
+    const finishWorkout = async () => {
+        if (!completedSets.length || isSaving) return;
+        setError("");
+        setIsSaving(true);
+        try {
+            const result = await apiRequest("/workouts", {
+                method: "POST",
+                body: JSON.stringify({
+                    title,
+                    durationMinutes: Math.max(1, durationMinutes),
+                    calories: Math.max(1, Math.round(Math.max(1, durationMinutes) * 7)),
+                    exercises: initialExercises.map((exercise) => ({
+                        name: exercise.name,
+                        sets: exerciseRows[exercise.id].filter((row) => row.completed),
+                    })).filter((exercise) => exercise.sets.length),
+                    startedAt: startedAt.toISOString(),
+                    completedAt: new Date().toISOString(),
+                }),
+            });
+            setHistory((current) => [result.workout, ...current]);
+            setExerciseRows(Object.fromEntries(initialExercises.map((exercise) => [
+                exercise.id,
+                createRows(exercise.sets),
+            ])));
+            setTitle("Strength Workout");
+            setStartedAt(new Date());
+            setElapsedSeconds(0);
+            setError("Workout saved successfully.");
+        } catch (requestError) {
+            setError(requestError.message);
+        } finally {
+            setIsSaving(false);
         }
+    };
 
-        return workouts.filter(
-            (workout) =>
-                workout.category === activeFilter
-        );
-    }, [activeFilter, workouts]);
+    const formattedHistory = history.map((workout) => ({
+        id: workout.id,
+        name: workout.title,
+        date: new Date(workout.createdAt).toLocaleDateString(),
+    }));
 
     return (
-        <section className="workouts-page">
-
-            {/* =========================================
-                HEADER
-            ========================================= */}
-
-            <header className="workouts-header">
-
-                <div>
-                    <span className="workouts-eyebrow">
-                        WORKOUT HUB
-                    </span>
-
-                    <h1>
-                        Train with purpose.
-                    </h1>
-
-                    <p>
-                        Plan your sessions, stay consistent,
-                        and keep your fitness momentum going.
-                    </p>
-                </div>
-
-                <Button
-                    size="large"
-                    icon={<Plus size={18} />}
-                >
-                    New Workout
-                </Button>
-
-            </header>
-
-            {/* =========================================
-                OVERVIEW
-            ========================================= */}
-
-            <div className="workout-overview">
-
-                <div className="workout-overview__item">
-                    <div className="workout-overview__icon">
-                        <Dumbbell size={19} />
-                    </div>
-
-                    <div>
-                        <span>
-                            This week
-                        </span>
-
-                        <strong>
-                            4 workouts
-                        </strong>
-                    </div>
-                </div>
-
-                <div className="workout-overview__item">
-                    <div className="workout-overview__icon workout-overview__icon--success">
-                        <Timer size={19} />
-                    </div>
-
-                    <div>
-                        <span>
-                            Total time
-                        </span>
-
-                        <strong>
-                            160 min
-                        </strong>
-                    </div>
-                </div>
-
-                <div className="workout-overview__item">
-                    <div className="workout-overview__icon workout-overview__icon--warning">
-                        <Flame size={19} />
-                    </div>
-
-                    <div>
-                        <span>
-                            Calories
-                        </span>
-
-                        <strong>
-                            1,180 kcal
-                        </strong>
-                    </div>
-                </div>
-
-                <div className="workout-overview__item">
-                    <div className="workout-overview__icon workout-overview__icon--info">
-                        <Clock3 size={19} />
-                    </div>
-
-                    <div>
-                        <span>
-                            Avg. session
-                        </span>
-
-                        <strong>
-                            40 min
-                        </strong>
-                    </div>
-                </div>
-
-            </div>
-
-            {/* =========================================
-                FILTERS
-            ========================================= */}
-
-            <div className="workouts-toolbar">
-
-                <div>
-                    <span className="workouts-toolbar__eyebrow">
-                        YOUR WORKOUTS
-                    </span>
-
-                    <h2>
-                        Training plan
-                    </h2>
-                </div>
-
-                <div className="workout-filters">
-                    {filterOptions.map(
-                        (filter) => (
-                            <button
-                                key={filter}
-                                type="button"
-                                className={`workout-filter ${
-                                    activeFilter ===
-                                    filter
-                                        ? "workout-filter--active"
-                                        : ""
-                                }`}
-                                onClick={() =>
-                                    setActiveFilter(
-                                        filter
-                                    )
-                                }
-                            >
-                                {filter}
-                            </button>
-                        )
-                    )}
-                </div>
-
-            </div>
-
-            {/* =========================================
-                WORKOUT GRID
-            ========================================= */}
-
-            <div className="workout-grid">
-
-                {filteredWorkouts.map(
-                    (workout) => (
-                        <article
-                            className="workout-card"
-                            key={workout.id}
-                        >
-                            <div className="workout-card__top">
-
-                                <div className="workout-card__icon">
-                                    <Dumbbell
-                                        size={21}
-                                    />
-                                </div>
-
-                                <button
-                                    type="button"
-                                    className="workout-card__menu"
-                                    aria-label={`More options for ${workout.title}`}
-                                >
-                                    <MoreHorizontal
-                                        size={18}
-                                    />
-                                </button>
-
-                            </div>
-
-                            <div className="workout-card__content">
-
-                                <div className="workout-card__status-row">
-
-                                    <span
-                                        className={`workout-card__status workout-card__status--${workout.status}`}
-                                    >
-                                        {workout.status ===
-                                        "completed"
-                                            ? "COMPLETED"
-                                            : "PLANNED"}
-                                    </span>
-
-                                    <span className="workout-card__intensity">
-                                        {workout.intensity}
-                                    </span>
-
-                                </div>
-
-                                <h3>
-                                    {workout.title}
-                                </h3>
-
-                                <span className="workout-card__category">
-                                    {workout.category}
-                                </span>
-
-                            </div>
-
-                            <div className="workout-card__meta">
-
-                                <div>
-                                    <Clock3
-                                        size={15}
-                                    />
-
-                                    <span>
-                                        {
-                                            workout.duration
-                                        }{" "}
-                                        min
-                                    </span>
-                                </div>
-
-                                <div>
-                                    <Flame
-                                        size={15}
-                                    />
-
-                                    <span>
-                                        {
-                                            workout.calories
-                                        }{" "}
-                                        kcal
-                                    </span>
-                                </div>
-
-                                <div>
-                                    <Dumbbell
-                                        size={15}
-                                    />
-
-                                    <span>
-                                        {
-                                            workout.exercises
-                                        }{" "}
-                                        exercises
-                                    </span>
-                                </div>
-
-                            </div>
-
-                            <button
-                                type="button"
-                                className="workout-card__button"
-                            >
-                                <Play
-                                    size={16}
-                                    fill="currentColor"
-                                />
-
-                                {workout.status ===
-                                "completed"
-                                    ? "View workout"
-                                    : "Start workout"}
-
-                                <ArrowRight
-                                    size={15}
-                                />
-                            </button>
-
-                        </article>
-                    )
-                )}
-
-            </div>
-
-            {/* =========================================
-                EMPTY STATE
-            ========================================= */}
-
-            {filteredWorkouts.length === 0 && (
-                <Card className="workout-empty">
-                    <Dumbbell
-                        size={32}
-                    />
-
-                    <h3>
-                        No workouts found
-                    </h3>
-
-                    <p>
-                        Try another category or create
-                        a new workout.
-                    </p>
-                </Card>
+        <div className="workouts-page page">
+            <WorkoutHeader
+                title={title}
+                onTitleChange={setTitle}
+                duration={`${Math.floor(elapsedSeconds / 60)}m`}
+                calories={`${Math.max(1, Math.round(Math.max(1, durationMinutes) * 7))} kcal`}
+                visual={<FitnessVisual3D icon={Dumbbell} variant="violet" />}
+            />
+            {error && (
+                <p className={error === "Workout saved successfully." ? "app-success" : "app-error"} role="status">
+                    {error}
+                </p>
             )}
-
-        </section>
+            <section className="workout-exercises">
+                {initialExercises.map((exercise) => (
+                    <ExerciseCard
+                        key={exercise.id}
+                        {...exercise}
+                        entries={exerciseRows[exercise.id]}
+                        onRowsChange={(rows) => updateRows(exercise.id, rows)}
+                    />
+                ))}
+            </section>
+            <section className="workout-actions">
+                <button
+                    className="finish-workout-button"
+                    type="button"
+                    onClick={finishWorkout}
+                    disabled={isSaving || completedSets.length === 0}
+                >
+                    {isSaving ? "Saving..." : `Finish Workout (${completedSets.length} sets)`}
+                </button>
+            </section>
+            <WorkoutHistory workouts={formattedHistory} />
+        </div>
     );
-};
-
-export default Workouts;
+}

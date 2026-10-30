@@ -1,71 +1,69 @@
 .mobile-nav {
     position: fixed;
+    left: 0;
     right: 0;
     bottom: 0;
-    left: 0;
-    z-index: var(--z-mobile-nav);
 
-    display: none;
+    z-index: 50;
+
+    display: flex;
     align-items: center;
+    justify-content: space-between;
 
-    min-height: var(--mobile-nav-height);
+    gap: 2px;
+    padding: 8px 6px max(8px, env(safe-area-inset-bottom));
 
-    padding:
-        8px max(10px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right));
+    background: var(--surface);
 
-    background: var(--glass-background);
+    backdrop-filter: blur(14px);
 
-    border-top: 1px solid var(--glass-border);
+    border-top: 1px solid var(--border-color);
 
-    box-shadow:
-        0 -10px 30px rgba(0, 0, 0, 0.18);
+    box-shadow: var(--shadow-bottom-nav);
 
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    transition:
+        background-color var(--transition-normal),
+        border-color var(--transition-normal);
 }
 
 .mobile-nav__item {
     display: flex;
-    flex: 1;
-
     flex-direction: column;
     align-items: center;
     justify-content: center;
 
     gap: 4px;
 
-    min-height: 48px;
+    min-width: 0;
+    flex: 1;
+    padding: 6px 2px;
 
-    padding: 6px 4px;
+    color: var(--text-secondary);
 
-    color: var(--text-muted);
+    border-radius: var(--radius-lg);
 
-    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 12px;
 
-    font-size: 0.6875rem;
-    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
 
     transition:
         color var(--transition-fast),
-        background var(--transition-fast),
-        transform var(--transition-fast);
+        background var(--transition-fast);
 }
 
-.mobile-nav__item:active {
-    transform: scale(0.94);
-    background: var(--surface-hover);
+.mobile-nav__item:hover {
+    color: var(--color-primary);
 }
 
 .mobile-nav__item--active {
     color: var(--color-primary);
+    background: var(--color-primary-soft);
 }
 
-.mobile-nav__item--active svg {
-    filter: drop-shadow(0 0 8px var(--color-primary-glow));
-}
-
-@media (max-width: 768px) {
+@media (min-width: 768px) {
     .mobile-nav {
-        display: flex;
+        display: none;
     }
 }

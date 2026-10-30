@@ -5,10 +5,14 @@ import {
     ChartNoAxesCombined,
     User,
     Settings,
+    Ruler,
+    Shield,
 } from "lucide-react";
 
 import { useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext.js";
+import FitTrackLogo from "../../brand/FitTrackLogo";
 
 import "./Sidebar.css";
 
@@ -39,9 +43,20 @@ const navigationItems = [
         path: "/profile",
     },
     {
+        label: "Measurements",
+        icon: Ruler,
+        path: "/measurements",
+    },
+    {
         label: "Settings",
         icon: Settings,
         path: "/settings",
+    },
+    {
+        label: "Admin",
+        icon: Shield,
+        path: "/admin",
+        adminOnly: true,
     },
 ];
 
@@ -50,6 +65,7 @@ const MAX_WIDTH = 380;
 const DEFAULT_WIDTH = 260;
 
 const Sidebar = () => {
+    const { user } = useAuth();
     const [sidebarWidth, setSidebarWidth] =
         useState(DEFAULT_WIDTH);
 
@@ -185,9 +201,7 @@ const Sidebar = () => {
 
             <div className="sidebar-brand">
 
-                <div className="sidebar-logo">
-                    FT
-                </div>
+                <FitTrackLogo className="sidebar-logo" />
 
                 <div className="sidebar_brand-content">
 
@@ -215,7 +229,9 @@ const Sidebar = () => {
 
                 <div className="sidebar_menu">
 
-                    {navigationItems.map(
+                    {navigationItems.filter((item) =>
+                        !item.adminOnly || ["admin", "superadmin"].includes(user?.role)
+                    ).map(
                         (item) => {
                             const Icon =
                                 item.icon;
@@ -263,34 +279,6 @@ const Sidebar = () => {
                 </div>
 
             </nav>
-
-            {/* =========================================
-                FOOTER
-            ========================================= */}
-
-            <div className="sidebar__footer">
-
-                <div className="sidebar__streak">
-
-                    <div className="sidebar__streak-icon">
-                        🔥
-                    </div>
-
-                    <div className="sidebar__streak-content">
-
-                        <strong>
-                            7 Day Streak
-                        </strong>
-
-                        <span>
-                            Keep going!
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
 
             {/* =========================================
                 RESIZE HANDLE

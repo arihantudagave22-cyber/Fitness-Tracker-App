@@ -1,536 +1,139 @@
-import {
-    ArrowRight,
-    Flame,
-    Medal,
-    Target,
-    Trophy,
-    Users,
-} from "lucide-react";
-
-import { useState } from "react";
-
+import { ArrowRight, Flame, Medal, Target, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
 import ChallengeModal from "../../components/challenges/ChallengeModal/ChallengeModal";
-
+import FitnessVisual3D from "../../components/brand/FitnessVisual3D";
+import { apiRequest } from "../../lib/api.js";
 import "./Challenges.css";
 
-const initialChallenges = [
-    {
-        id: 1,
-        title: "7 Day Streak",
-        description:
-            "Complete at least one workout every day for 7 consecutive days.",
-        icon: Flame,
-        progress: 5,
-        target: 7,
-        unit: "days",
-        reward: "150 XP",
-        participants: 1248,
-        status: "active",
-    },
-    {
-        id: 2,
-        title: "10K Steps",
-        description:
-            "Reach 10,000 steps in a single day and push your daily activity.",
-        icon: Target,
-        progress: 7200,
-        target: 10000,
-        unit: "steps",
-        reward: "100 XP",
-        participants: 896,
-        status: "active",
-    },
-    {
-        id: 3,
-        title: "Strength Builder",
-        description:
-            "Complete 12 strength workouts and build a consistent routine.",
-        icon: Medal,
-        progress: 8,
-        target: 12,
-        unit: "workouts",
-        reward: "250 XP",
-        participants: 634,
-        status: "active",
-    },
-    {
-        id: 4,
-        title: "Monthly Warrior",
-        description:
-            "Complete 20 workouts this month and become a consistency champion.",
-        icon: Trophy,
-        progress: 14,
-        target: 20,
-        unit: "workouts",
-        reward: "500 XP",
-        participants: 421,
-        status: "active",
-    },
-];
+const challengeIcons = {
+    "7-day-streak": Flame,
+    "10k-steps": Target,
+    "strength-builder": Medal,
+    "monthly-warrior": Trophy,
+};
 
 const Challenges = () => {
-    const [challengeList, setChallengeList] =
-        useState(initialChallenges);
+    const [challengeList, setChallengeList] = useState([]);
+    const [selectedChallenge, setSelectedChallenge] = useState(null);
+    const [error, setError] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
-    const [selectedChallenge, setSelectedChallenge] =
-        useState(null);
-
-    /* =========================================
-       UPDATE CHALLENGE PROGRESS
-    ========================================= */
-
-    const handleProgress = () => {
-        if (!selectedChallenge) {
-            return;
-        }
-
-        setChallengeList((previousChallenges) =>
-            previousChallenges.map((challenge) => {
-                if (
-                    challenge.id !==
-                    selectedChallenge.id
-                ) {
-                    return challenge;
-                }
-
-                const updatedProgress = Math.min(
-                    challenge.progress + 1,
-                    challenge.target
-                );
-
-                return {
-                    ...challenge,
-                    progress: updatedProgress,
-                    status:
-                        updatedProgress >=
-                        challenge.target
-                            ? "completed"
-                            : "active",
-                };
+    useEffect(() => {
+        let isCurrent = true;
+        apiRequest("/challenges")
+            .then((result) => {
+                if (isCurrent) setChallengeList(result.challenges);
             })
-        );
+            .catch((requestError) => {
+                if (isCurrent) setError(requestError.message);
+            });
+        return () => { isCurrent = false; };
+    }, []);
 
-        setSelectedChallenge(
-            (previousChallenge) => {
-                if (!previousChallenge) {
-                    return null;
-                }
-
-                const updatedProgress =
-                    Math.min(
-                        previousChallenge.progress +
-                            1,
-                        previousChallenge.target
-                    );
-
-                return {
-                    ...previousChallenge,
-                    progress:
-                        updatedProgress,
-                    status:
-                        updatedProgress >=
-                        previousChallenge.target
-                            ? "completed"
-                            : "active",
-                };
-            }
-        );
+    const handleProgress = async () => {
+        if (!selectedChallenge || isSaving) return;
+        setError("");
+        setIsSaving(true);
+        try {
+            const result = await apiRequest(
+                `/challenges/${encodeURIComponent(selectedChallenge.key)}/progress`,
+                { method: "POST" },
+            );
+            setChallengeList((current) => current.map((challenge) =>
+                challenge.key === result.challenge.key ? result.challenge : challenge
+            ));
+            setSelectedChallenge({
+                ...result.challenge,
+                icon: challengeIcons[result.challenge.key] ?? Trophy,
+            });
+        } catch (requestError) {
+            setError(requestError.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    if (error && challengeList.length === 0) {
+        return <p className="app-error" role="alert">{error}</p>;
+    }
+
+    const completed = challengeList.filter((challenge) => challenge.status === "completed").length;
+    const active = challengeList.length - completed;
 
     return (
         <section className="challenges-page">
-
-            {/* =========================================
-                HEADER
-            ========================================= */}
-
             <header className="challenges-header">
-
                 <div>
-
-                    <span className="challenges-eyebrow">
-                        CHALLENGE HUB
-                    </span>
-
-                    <h1>
-                        Push your limits.
-                    </h1>
-
-                    <p>
-                        Take on challenges, build
-                        consistency, and earn rewards
-                        along the way.
-                    </p>
-
+                    <span className="challenges-eyebrow">CHALLENGE HUB</span>
+                    <h1>Push your limits.</h1>
+                    <p>Track challenge progress as you build consistency.</p>
                 </div>
-
+                <FitnessVisual3D icon={Trophy} variant="orange" />
                 <div className="challenges-header__badge">
-
                     <Trophy size={18} />
-
-                    <div>
-
-                        <strong>
-                            2,450 XP
-                        </strong>
-
-                        <span>
-                            Total earned
-                        </span>
-
-                    </div>
-
+                    <div><strong>{completed} completed</strong><span>Your milestones</span></div>
                 </div>
-
             </header>
 
-            {/* =========================================
-                STATS
-            ========================================= */}
+            {error && <p className="app-error" role="alert">{error}</p>}
+            {!challengeList.length && !error && <p role="status">Loading challenges...</p>}
 
             <div className="challenge-stats">
-
-                <div className="challenge-stat">
-
-                    <div className="challenge-stat__icon">
-                        <Trophy size={19} />
-                    </div>
-
-                    <div>
-
-                        <span>
-                            Active challenges
-                        </span>
-
-                        <strong>
-                            {
-                                challengeList.filter(
-                                    (challenge) =>
-                                        challenge.status ===
-                                        "active"
-                                ).length
-                            }
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <div className="challenge-stat">
-
-                    <div className="challenge-stat__icon">
-                        <Flame size={19} />
-                    </div>
-
-                    <div>
-
-                        <span>
-                            Current streak
-                        </span>
-
-                        <strong>
-                            7 days
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <div className="challenge-stat">
-
-                    <div className="challenge-stat__icon">
-                        <Medal size={19} />
-                    </div>
-
-                    <div>
-
-                        <span>
-                            Completed
-                        </span>
-
-                        <strong>
-                            {
-                                challengeList.filter(
-                                    (challenge) =>
-                                        challenge.status ===
-                                        "completed"
-                                ).length
-                            }
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <div className="challenge-stat">
-
-                    <div className="challenge-stat__icon">
-                        <Target size={19} />
-                    </div>
-
-                    <div>
-
-                        <span>
-                            Completion rate
-                        </span>
-
-                        <strong>
-                            {
-                                Math.round(
-                                    (challengeList.filter(
-                                        (challenge) =>
-                                            challenge.status ===
-                                            "completed"
-                                    ).length /
-                                        challengeList.length) *
-                                        100
-                                )
-                            }
-                            %
-                        </strong>
-
-                    </div>
-
-                </div>
-
+                <div className="challenge-stat"><strong>{challengeList.length}</strong><span>Total challenges</span></div>
+                <div className="challenge-stat"><strong>{active}</strong><span>In progress</span></div>
+                <div className="challenge-stat"><strong>{completed}</strong><span>Completed</span></div>
             </div>
-
-            {/* =========================================
-                SECTION HEADER
-            ========================================= */}
-
-            <div className="challenges-section-header">
-
-                <div>
-
-                    <span>
-                        YOUR CHALLENGES
-                    </span>
-
-                    <h2>
-                        Keep the momentum going
-                    </h2>
-
-                </div>
-
-                <button
-                    type="button"
-                    className="challenges-view-button"
-                >
-                    View history
-
-                    <ArrowRight size={15} />
-                </button>
-
-            </div>
-
-            {/* =========================================
-                CHALLENGE GRID
-            ========================================= */}
 
             <div className="challenge-grid">
-
-                {challengeList.map(
-                    (challenge) => {
-                        const Icon =
-                            challenge.icon;
-
-                        const percentage =
-                            Math.min(
-                                Math.round(
-                                    (challenge.progress /
-                                        challenge.target) *
-                                        100
-                                ),
-                                100
-                            );
-
-                        const isCompleted =
-                            challenge.status ===
-                            "completed";
-
-                        return (
-                            <article
-                                className="challenge-card"
-                                key={challenge.id}
+                {challengeList.map((challenge) => {
+                    const Icon = challengeIcons[challenge.key] ?? Trophy;
+                    const isCompleted = challenge.status === "completed";
+                    const percentage = Math.min(100, Math.round((challenge.progress / challenge.target) * 100));
+                    return (
+                        <article className="challenge-card" key={challenge.key}>
+                            <div className="challenge-card__header">
+                                <div className="challenge-card__icon"><Icon size={22} /></div>
+                                <span className={`challenge-card__status ${isCompleted ? "challenge-card__status--completed" : ""}`}>
+                                    {isCompleted ? "COMPLETED" : "IN PROGRESS"}
+                                </span>
+                            </div>
+                            <h2>{challenge.title}</h2>
+                            <p>{challenge.description}</p>
+                            <div className="challenge-progress">
+                                <div className="challenge-progress__header">
+                                    <span>Your progress</span><strong>{percentage}%</strong>
+                                </div>
+                                <div className="challenge-progress__track">
+                                    <div className="challenge-progress__bar" style={{ width: `${percentage}%` }} />
+                                </div>
+                                <div className="challenge-progress__values">
+                                    <span>{challenge.progress.toLocaleString()} {challenge.unit}</span>
+                                    <span>{challenge.target.toLocaleString()} {challenge.unit}</span>
+                                </div>
+                            </div>
+                            <div className="challenge-card__footer">
+                                <span><Trophy size={15} /> {challenge.reward}</span>
+                            </div>
+                            <button
+                                type="button"
+                                className="challenge-card__button"
+                                onClick={() => setSelectedChallenge({ ...challenge, icon: Icon })}
+                                disabled={isCompleted}
                             >
-
-                                {/* CARD TOP */}
-
-                                <div className="challenge-card__top">
-
-                                    <div className="challenge-card__icon">
-                                        <Icon
-                                            size={21}
-                                            strokeWidth={2}
-                                        />
-                                    </div>
-
-                                    <span
-                                        className={`challenge-card__status ${
-                                            isCompleted
-                                                ? "challenge-card__status--completed"
-                                                : ""
-                                        }`}
-                                    >
-                                        {isCompleted
-                                            ? "COMPLETED"
-                                            : "ACTIVE"}
-                                    </span>
-
-                                </div>
-
-                                {/* CARD CONTENT */}
-
-                                <div className="challenge-card__content">
-
-                                    <h3>
-                                        {
-                                            challenge.title
-                                        }
-                                    </h3>
-
-                                    <p>
-                                        {
-                                            challenge.description
-                                        }
-                                    </p>
-
-                                </div>
-
-                                {/* PROGRESS */}
-
-                                <div className="challenge-progress">
-
-                                    <div className="challenge-progress__header">
-
-                                        <span>
-                                            Progress
-                                        </span>
-
-                                        <strong>
-                                            {
-                                                percentage
-                                            }
-                                            %
-                                        </strong>
-
-                                    </div>
-
-                                    <div className="challenge-progress__track">
-
-                                        <div
-                                            className="challenge-progress__bar"
-                                            style={{
-                                                width: `${percentage}%`,
-                                            }}
-                                        />
-
-                                    </div>
-
-                                    <div className="challenge-progress__values">
-
-                                        <span>
-                                            {challenge.progress.toLocaleString()}{" "}
-                                            {
-                                                challenge.unit
-                                            }
-                                        </span>
-
-                                        <span>
-                                            {challenge.target.toLocaleString()}{" "}
-                                            {
-                                                challenge.unit
-                                            }
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                                {/* CARD FOOTER */}
-
-                                <div className="challenge-card__footer">
-
-                                    <div className="challenge-reward">
-
-                                        <Trophy
-                                            size={15}
-                                        />
-
-                                        <span>
-                                            {
-                                                challenge.reward
-                                            }
-                                        </span>
-
-                                    </div>
-
-                                    <div className="challenge-participants">
-
-                                        <Users
-                                            size={15}
-                                        />
-
-                                        <span>
-                                            {challenge.participants.toLocaleString()}
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                                {/* ACTION */}
-
-                                <button
-                                    type="button"
-                                    className="challenge-card__button"
-                                    onClick={() =>
-                                        setSelectedChallenge(
-                                            challenge
-                                        )
-                                    }
-                                    disabled={
-                                        isCompleted
-                                    }
-                                >
-                                    {isCompleted
-                                        ? "Challenge completed"
-                                        : "Continue challenge"}
-
-                                    {!isCompleted && (
-                                        <ArrowRight
-                                            size={16}
-                                        />
-                                    )}
-
-                                </button>
-
-                            </article>
-                        );
-                    }
-                )}
-
+                                {isCompleted ? "Challenge completed" : "View challenge"}
+                                {!isCompleted && <ArrowRight size={16} />}
+                            </button>
+                        </article>
+                    );
+                })}
             </div>
 
-            {/* =========================================
-                CHALLENGE MODAL
-            ========================================= */}
-
             <ChallengeModal
-                challenge={
-                    selectedChallenge
-                }
-                onClose={() =>
-                    setSelectedChallenge(
-                        null
-                    )
-                }
-                onProgress={
-                    handleProgress
-                }
+                challenge={selectedChallenge}
+                onClose={() => setSelectedChallenge(null)}
+                onProgress={handleProgress}
+                isSaving={isSaving}
             />
-
         </section>
     );
 };

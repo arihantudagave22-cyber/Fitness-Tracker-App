@@ -10,14 +10,19 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import Button from "../../../components/common/Button/Button";
+import FitTrackLogo from "../../../components/brand/FitTrackLogo";
+import { apiRequest, saveAuthToken } from "../../../lib/api";
+import { useAuth } from "../../../context/AuthContext.js";
 
 import "./Login.css";
 
 const Login = () => {
     const navigate = useNavigate();
+    const { signIn } = useAuth();
 
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [formError, setFormError] = useState("");
 
     const [formData, setFormData] = useState({
         email: "",
@@ -38,6 +43,7 @@ const Login = () => {
             ...previous,
             [name]: "",
         }));
+        setFormError("");
     };
 
     const validateForm = () => {
@@ -76,19 +82,18 @@ const Login = () => {
         }
 
         setIsLoading(true);
+        setFormError("");
 
         try {
-            /*
-             * Backend authentication will be connected here later.
-             *
-             * For now, simulate a successful login.
-             */
-
-            await new Promise((resolve) =>
-                setTimeout(resolve, 800)
-            );
-
+            const result = await apiRequest("/auth/login", {
+                method: "POST",
+                body: JSON.stringify(formData),
+            });
+            saveAuthToken(result.token);
+            signIn(result.user);
             navigate("/");
+        } catch (error) {
+            setFormError(error.message);
         } finally {
             setIsLoading(false);
         }
@@ -101,9 +106,7 @@ const Login = () => {
             <div className="login-container">
 
                 <div className="login-brand">
-                    <div className="login-brand__logo">
-                        FT
-                    </div>
+                    <FitTrackLogo />
 
                     <div>
                         <h1>FitTrack</h1>
@@ -133,6 +136,12 @@ const Login = () => {
                         onSubmit={handleSubmit}
                         noValidate
                     >
+
+                        {formError && (
+                            <p className="login-form__error" role="alert">
+                                {formError}
+                            </p>
+                        )}
 
                         {/* EMAIL */}
 

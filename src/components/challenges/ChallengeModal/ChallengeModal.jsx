@@ -2,10 +2,7 @@ import {
     ArrowRight,
     CheckCircle2,
     Flame,
-    Medal,
-    Target,
     Trophy,
-    Users,
     X,
 } from "lucide-react";
 
@@ -15,6 +12,7 @@ const ChallengeModal = ({
     challenge,
     onClose,
     onProgress,
+    isSaving = false,
 }) => {
     if (!challenge) {
         return null;
@@ -156,24 +154,6 @@ const ChallengeModal = ({
 
                         </div>
 
-                        <div className="challenge-modal__detail">
-
-                            <div className="challenge-modal__detail-icon">
-                                <Users size={17} />
-                            </div>
-
-                            <div>
-                                <span>
-                                    Participants
-                                </span>
-
-                                <strong>
-                                    {challenge.participants.toLocaleString()}
-                                </strong>
-                            </div>
-
-                        </div>
-
                     </div>
 
                     {/* =========================================
@@ -219,12 +199,14 @@ const ChallengeModal = ({
                         type="button"
                         className="challenge-modal__primary"
                         onClick={onProgress}
+                        disabled={isSaving || percentage >= 100}
+                        aria-label="Add one unit of challenge progress"
                     >
                         <CheckCircle2
                             size={17}
                         />
 
-                        Mark progress
+                        {isSaving ? "Saving..." : "Mark progress"}
 
                         <ArrowRight
                             size={16}

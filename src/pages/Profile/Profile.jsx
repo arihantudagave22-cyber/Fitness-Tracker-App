@@ -1,7 +1,6 @@
 import {
     Award,
     CalendarDays,
-    Camera,
     Check,
     Flame,
     Mail,
@@ -12,20 +11,32 @@ import {
     UserRound,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import FitnessVisual3D from "../../components/brand/FitnessVisual3D";
+import { useAuth } from "../../context/AuthContext.js";
+import { apiRequest } from "../../lib/api.js";
 
 import "./Profile.css";
 
 const Profile = () => {
+    const { user, signIn } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [profile, setProfile] = useState(user);
+    const [activity, setActivity] = useState(null);
+    const [error, setError] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
-    const [profile, setProfile] = useState({
-        name: "Alex Morgan",
-        email: "alex.morgan@gmail.com",
-        location: "Bengaluru, India",
-        bio: "Focused on becoming stronger, healthier, and more consistent every day.",
-        goal: "Build strength & improve fitness",
-    });
+    useEffect(() => {
+        let isCurrent = true;
+        apiRequest("/dashboard")
+            .then((result) => {
+                if (isCurrent) setActivity(result.dashboard);
+            })
+            .catch((requestError) => {
+                if (isCurrent) setError(requestError.message);
+            });
+        return () => { isCurrent = false; };
+    }, []);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -36,12 +47,36 @@ const Profile = () => {
         }));
     };
 
-    const handleSave = () => {
-        setIsEditing(false);
+    const handleSave = async () => {
+        setError("");
+        setIsSaving(true);
+        try {
+            const result = await apiRequest("/profile", {
+                method: "PATCH",
+                body: JSON.stringify({
+                    name: profile.name,
+                    location: profile.location ?? "",
+                    bio: profile.bio ?? "",
+                    goal: profile.goal ?? "",
+                }),
+            });
+            setProfile(result.user);
+            signIn(result.user);
+            setIsEditing(false);
+        } catch (requestError) {
+            setError(requestError.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    if (!profile) {
+        return <p className="app-loading" role="status">Loading your profile...</p>;
+    }
 
     return (
         <section className="profile-page">
+            {error && <p className="app-error" role="alert">{error}</p>}
 
             {/* =========================================
                 HEADER
@@ -64,6 +99,8 @@ const Profile = () => {
                     </p>
                 </div>
 
+                <FitnessVisual3D icon={UserRound} variant="green" />
+
                 <button
                     type="button"
                     className="profile-edit-button"
@@ -72,11 +109,12 @@ const Profile = () => {
                             ? handleSave()
                             : setIsEditing(true)
                     }
+                    disabled={isSaving}
                 >
                     {isEditing ? (
                         <>
                             <Check size={17} />
-                            Save changes
+                            {isSaving ? "Saving..." : "Save changes"}
                         </>
                     ) : (
                         <>
@@ -101,16 +139,6 @@ const Profile = () => {
                         <div className="profile-avatar">
                             <UserRound size={42} />
                         </div>
-
-                        {isEditing && (
-                            <button
-                                type="button"
-                                className="profile-avatar-edit"
-                                aria-label="Change profile picture"
-                            >
-                                <Camera size={15} />
-                            </button>
-                        )}
 
                     </div>
 
@@ -148,11 +176,11 @@ const Profile = () => {
 
                         <div className="profile-level__header">
                             <span>
-                                Fitness level
+                                Current streak
                             </span>
 
                             <strong>
-                                Level 12
+                                {activity?.streak ?? 0} days
                             </strong>
                         </div>
 
@@ -160,13 +188,13 @@ const Profile = () => {
                             <div
                                 className="profile-level__bar"
                                 style={{
-                                    width: "72%",
+                                    width: `${Math.min(100, ((activity?.streak ?? 0) / 7) * 100)}%`,
                                 }}
                             />
                         </div>
 
                         <span className="profile-level__hint">
-                            720 / 1000 XP to Level 13
+                            {activity?.streak ?? 0} consecutive days
                         </span>
 
                     </div>
@@ -225,18 +253,8 @@ const Profile = () => {
                             </label>
 
                             {isEditing ? (
-                                <input
-                                    id="profile-email"
-                                    name="email"
-                                    type="email"
-                                    value={profile.email}
-                                    onChange={handleChange}
-                                />
-                            ) : (
-                                <div className="profile-field__value">
-                                    {profile.email}
-                                </div>
-                            )}
+                                <div className="profile-field__value">{profile.email}</div>
+                            ) : <div className="profile-field__value">{profile.email}</div>}
 
                         </div>
 
@@ -339,9 +357,7 @@ const Profile = () => {
                             <Flame size={21} />
                         </div>
 
-                        <strong>
-                            7 Day Streak
-                        </strong>
+                        <strong>{activity?.streak ?? 0} Day Streak</strong>
 
                         <span>
                             Consistency champion
@@ -358,7 +374,7 @@ const Profile = () => {
                         </strong>
 
                         <span>
-                            Completed 12 challenges
+                            Completed {activity?.challenges.completed ?? 0} challenges
                         </span>
                     </article>
 
@@ -372,7 +388,7 @@ const Profile = () => {
                         </strong>
 
                         <span>
-                            78% goal completion
+                            {Math.min(100, Math.round(((activity?.totals.weeklyWorkouts ?? 0) / 5) * 100))}% weekly goal
                         </span>
                     </article>
 
@@ -386,7 +402,7 @@ const Profile = () => {
                         </strong>
 
                         <span>
-                            2,450 XP earned
+                            Fitness activity
                         </span>
                     </article>
 
@@ -420,7 +436,7 @@ const Profile = () => {
 
                     <div>
                         <strong>
-                            18
+                            {activity?.totals.workoutCount ?? 0}
                         </strong>
 
                         <span>
@@ -430,7 +446,7 @@ const Profile = () => {
 
                     <div>
                         <strong>
-                            4
+                            {activity?.totals.weeklyWorkouts ?? 0}
                         </strong>
 
                         <span>
@@ -440,7 +456,7 @@ const Profile = () => {
 
                     <div>
                         <strong>
-                            12
+                            {activity?.challenges.completed ?? 0}
                         </strong>
 
                         <span>
@@ -450,11 +466,11 @@ const Profile = () => {
 
                     <div>
                         <strong>
-                            2,450
+                            {activity?.streak ?? 0}
                         </strong>
 
                         <span>
-                            Total XP
+                            Day streak
                         </span>
                     </div>
 

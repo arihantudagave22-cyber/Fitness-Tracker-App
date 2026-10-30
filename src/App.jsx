@@ -1,8 +1,10 @@
 import {
     Navigate,
+    Outlet,
     Route,
     Routes,
 } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.js";
 
 import AppLayout from "./components/layout/AppLayout/AppLayout";
 
@@ -14,6 +16,34 @@ import Workouts from "./pages/Workouts/Workouts";
 import Progress from "./pages/Progress/Progress";
 import Profile from "./pages/Profile/Profile";
 import Settings from "./pages/Settings/Settings";
+import Measurements from "./pages/Measurements/Measurements";
+import AdminUsers from "./pages/Admin/AdminUsers";
+
+function ProtectedApp() {
+    const { user, isLoading } = useAuth();
+
+    if (isLoading) {
+        return <div className="app-loading" role="status">Loading your fitness data...</div>;
+    }
+
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+    return <AppLayout />;
+}
+
+function RequireRole({ allowedRoles }) {
+    const { user } = useAuth();
+    return allowedRoles.includes(user?.role) ? <Outlet /> : <Navigate to="/" replace />;
+}
+
+function AuthRoute({ children }) {
+    const { user, isLoading } = useAuth();
+    if (isLoading) {
+        return <div className="app-loading" role="status">Loading your account...</div>;
+    }
+    return user ? <Navigate to="/" replace /> : children;
+}
 
 
 const App = () => {
@@ -24,16 +54,16 @@ const App = () => {
 
             <Route
                 path="/login"
-                element={<Login />}
+                element={<AuthRoute><Login /></AuthRoute>}
             />
 
             <Route
                 path="/register"
-                element={<Register />}
+                element={<AuthRoute><Register /></AuthRoute>}
             />
 
         {/* Application */}      
-            <Route element={<AppLayout />}>
+            <Route element={<ProtectedApp />}>
                 <Route
                     path="/"
                     element={<Dashboard />}
@@ -50,13 +80,23 @@ const App = () => {
                     element={<Progress />}
                 />
                 <Route
+                    path="/measurements"
+                    element={<Measurements />}
+                />
+                <Route
                     path="/profile"
                     element={<Profile />}
                 />
                 <Route
-                    path="settings"
+                    path="/settings"
                     element={<Settings />}
                 />
+                <Route
+                    path="/admin"
+                    element={<RequireRole allowedRoles={["admin", "superadmin"]} />}
+                >
+                    <Route index element={<AdminUsers />} />
+                </Route>
         </Route>
         
         {/* Unknown route */}

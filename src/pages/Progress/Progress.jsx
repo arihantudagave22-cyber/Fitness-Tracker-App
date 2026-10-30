@@ -1,7 +1,5 @@
 import {
     Activity,
-    ArrowDown,
-    ArrowUp,
     Flame,
     Target,
     Trophy,
@@ -18,79 +16,40 @@ import {
     YAxis,
 } from "recharts";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import FitnessVisual3D from "../../components/brand/FitnessVisual3D";
+import { apiRequest } from "../../lib/api.js";
 
 import "./Progress.css";
 
-const weeklyData = [
-    {
-        day: "Mon",
-        workouts: 1,
-        calories: 320,
-    },
-    {
-        day: "Tue",
-        workouts: 0,
-        calories: 0,
-    },
-    {
-        day: "Wed",
-        workouts: 1,
-        calories: 410,
-    },
-    {
-        day: "Thu",
-        workouts: 1,
-        calories: 290,
-    },
-    {
-        day: "Fri",
-        workouts: 0,
-        calories: 0,
-    },
-    {
-        day: "Sat",
-        workouts: 1,
-        calories: 360,
-    },
-    {
-        day: "Sun",
-        workouts: 0,
-        calories: 0,
-    },
-];
-
-const monthlyData = [
-    {
-        day: "Week 1",
-        workouts: 3,
-        calories: 980,
-    },
-    {
-        day: "Week 2",
-        workouts: 4,
-        calories: 1240,
-    },
-    {
-        day: "Week 3",
-        workouts: 5,
-        calories: 1510,
-    },
-    {
-        day: "Week 4",
-        workouts: 4,
-        calories: 1180,
-    },
-];
-
 const Progress = () => {
-    const [period, setPeriod] =
-        useState("week");
+    const [period, setPeriod] = useState("week");
+    const [progress, setProgress] = useState(null);
+    const [requestError, setRequestError] = useState(null);
 
-    const chartData =
-        period === "week"
-            ? weeklyData
-            : monthlyData;
+    useEffect(() => {
+        let isCurrent = true;
+        apiRequest(`/progress?period=${period}`)
+            .then((result) => {
+                if (isCurrent) setProgress(result.progress);
+            })
+            .catch((error) => {
+                if (isCurrent) setRequestError({ period, message: error.message });
+            });
+        return () => { isCurrent = false; };
+    }, [period]);
+
+    if (requestError?.period === period) {
+        return <p className="app-error" role="alert">{requestError.message}</p>;
+    }
+    if (progress?.period !== period) {
+        return <p className="app-loading" role="status">Loading your progress...</p>;
+    }
+
+    const chartData = progress.chart;
+    const totals = progress.totals;
+    const goal = period === "week" ? 5 : 20;
+    const goalPercent = Math.min(100, Math.round((totals.workouts / goal) * 100));
 
     return (
         <section className="progress-page">
@@ -116,16 +75,18 @@ const Progress = () => {
                     </p>
                 </div>
 
+                <FitnessVisual3D icon={TrendingUp} variant="cyan" />
+
                 <div className="progress-header__badge">
                     <TrendingUp size={18} />
 
                     <div>
                         <strong>
-                            +18.4%
+                            {totals.workouts}
                         </strong>
 
                         <span>
-                            This month
+                            {period === "week" ? "Workouts this week" : "Workouts this month"}
                         </span>
                     </div>
                 </div>
@@ -150,11 +111,11 @@ const Progress = () => {
                         </span>
 
                         <strong>
-                            18
+                            {totals.workouts}
                         </strong>
 
                         <small>
-                            +4 this month
+                            {period === "week" ? "This week" : "This month"}
                         </small>
                     </div>
 
@@ -172,11 +133,11 @@ const Progress = () => {
                         </span>
 
                         <strong>
-                            4,910
+                            {totals.calories.toLocaleString()}
                         </strong>
 
                         <small>
-                            +12.8%
+                            Calories logged
                         </small>
                     </div>
 
@@ -194,11 +155,11 @@ const Progress = () => {
                         </span>
 
                         <strong>
-                            78%
+                            {goalPercent}%
                         </strong>
 
                         <small>
-                            +6.2%
+                            {`${totals.workouts} of ${goal}`}
                         </small>
                     </div>
 
@@ -212,15 +173,15 @@ const Progress = () => {
 
                     <div>
                         <span>
-                            XP earned
+                            Challenges completed
                         </span>
 
                         <strong>
-                            2,450
+                            {totals.completedChallenges}
                         </strong>
 
                         <small>
-                            +320 XP
+                            Challenges completed
                         </small>
                     </div>
 
@@ -403,11 +364,11 @@ const Progress = () => {
                     <div className="progress-goal">
 
                         <strong>
-                            4
+                        {totals.workouts}
                         </strong>
 
                         <span>
-                            / 5 workouts
+                            / {goal} workouts
                         </span>
 
                     </div>
@@ -417,15 +378,16 @@ const Progress = () => {
                         <div
                             className="progress-goal-bar"
                             style={{
-                                width: "80%",
+                                width: `${goalPercent}%`,
                             }}
                         />
 
                     </div>
 
                     <p>
-                        One more workout to reach
-                        your weekly goal.
+                        {goalPercent >= 100
+                            ? "You reached your workout goal for this period."
+                            : `${Math.max(0, goal - totals.workouts)} more workout${goal - totals.workouts === 1 ? "" : "s"} to reach your goal.`}
                     </p>
 
                 </article>
@@ -440,7 +402,7 @@ const Progress = () => {
                             </span>
 
                             <h3>
-                                Compared to last month
+                                This period
                             </h3>
                         </div>
 
@@ -451,31 +413,14 @@ const Progress = () => {
                     <div className="progress-comparison">
 
                         <div>
-                            <ArrowUp
-                                size={17}
-                            />
-
-                            <strong>
-                                18.4%
-                            </strong>
-
-                            <span>
-                                Overall improvement
-                            </span>
+                            <Flame size={17} />
+                            <strong>{totals.calories.toLocaleString()}</strong>
+                            <span>Calories logged</span>
                         </div>
-
                         <div>
-                            <ArrowDown
-                                size={17}
-                            />
-
-                            <strong>
-                                6.2%
-                            </strong>
-
-                            <span>
-                                Rest day reduction
-                            </span>
+                            <Activity size={17} />
+                            <strong>{totals.durationMinutes}</strong>
+                            <span>Training minutes</span>
                         </div>
 
                     </div>
